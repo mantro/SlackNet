@@ -1,19 +1,30 @@
-﻿namespace SlackNet
+﻿using SlackNet.Events;
+using System.Collections.Generic;
+
+namespace SlackNet
 {
     public class Channel : Hub
     {
+        public bool IsChannel { get; set; }
+        public int Unlinked { get; set; }
+        public bool IsReadOnly { get; set; }
         /// <summary>
-        /// The name of the channel, without a leading hash sign.
+        /// The latest message in the channel.
         /// </summary>
-        public string Name { get; set; }
+        public MessageEvent Latest { get; set; }
         /// <summary>
-        /// The user ID of the member that created this channel.
+        /// Full count of visible messages that the calling user has yet to read.
         /// </summary>
-        public string Creator { get; set; }
-        public bool IsArchived { get; set; }
-        public Topic Topic { get; set; }
-        public Topic Purpose { get; set; }
+        public int UnreadCount { get; set; }
+        /// <summary>
+        /// Count of messages that the calling user has yet to read that matter to them (this means it excludes things like join/leave messages).
+        /// </summary>
+        public int UnreadCountDisplay { get; set; }
 
+        /// <summary>
+        /// A list of user IDs for all users in this channel. This includes any disabled accounts that were in this channel when they were disabled.
+        /// </summary>
+        public IList<string> Members { get; set; } = new List<string>();
         public override string ToString() => Link.Hub(Id).ToString();
     }
 }
