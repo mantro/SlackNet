@@ -2,8 +2,6 @@
 {
     public class Conversation : Hub
     {
-        public bool IsIm { get; set; }
-        public bool IsGroup { get; set; }
         public int Unlinked { get; set; }
         /// <summary>
         /// Means the conversation can't be written to by typical users. Admins may have the ability.
