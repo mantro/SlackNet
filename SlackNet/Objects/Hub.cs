@@ -32,6 +32,8 @@ namespace SlackNet
         /// Means the conversation is privileged between two or more members. Meet their privacy expectations.
         /// </summary>
         public bool IsPrivate { get; set; }
+        public bool? IsIm { get; set; }
+        public bool? IsGroup { get; set; }
         public bool IsMpim { get; set; }
         /// <summary>
         /// Timestamp for the last message the calling user has read in this channel.

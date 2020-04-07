@@ -312,7 +312,7 @@ namespace SlackNet.Bot
         /// Find private group by name.
         /// </summary>
         public async Task<Hub> GetGroupByName(string name) =>
-            await FindCachedHub<Channel>(h => h.IsGroup && h.Name == name).ConfigureAwait(false)
+            await FindCachedHub<Channel>(h => h.IsGroup.GetValueOrDefault() && h.Name == name).ConfigureAwait(false)
             ?? (await GetGroups().ConfigureAwait(false))
                 .FirstOrDefault(g => g.Name == name);
 
