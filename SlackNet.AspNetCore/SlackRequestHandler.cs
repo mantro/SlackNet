@@ -284,8 +284,8 @@ namespace SlackNet.AspNetCore
             new StreamReader(request.Body).ReadToEndAsync();
 
         private static bool VerifyRequest(string requestBody, IHeaderDictionary headers, string token, SlackEndpointConfiguration config) =>
-            !string.IsNullOrEmpty(config.SigningSecret) 
-                ? IsValidSignature(requestBody, headers, config.SigningSecret) 
+            !string.IsNullOrEmpty(config.SigningSecret)
+                ? IsValidSignature(requestBody, headers, config.SigningSecret)
                 : IsValidToken(token, config.VerificationToken);
 
         private static bool IsValidSignature(string requestBody, IHeaderDictionary headers, string signingSecret)
@@ -300,7 +300,7 @@ namespace SlackNet.AspNetCore
             }
         }
 
-        private static bool IsValidToken(string requestToken, string verificationToken) => 
+        private static bool IsValidToken(string requestToken, string verificationToken) =>
             string.IsNullOrEmpty(verificationToken)
             || requestToken == verificationToken;
 
