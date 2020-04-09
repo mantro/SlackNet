@@ -35,7 +35,7 @@ namespace SlackNet.AspNetCore
             return RegisterEventHandler(c => handler);
         }
 
-        public SlackServiceConfiguration RegisterEventHandler<TEvent>(Func<IServiceProvider, IEventHandler<TEvent>> handlerFactory) 
+        public SlackServiceConfiguration RegisterEventHandler<TEvent>(Func<IServiceProvider, IEventHandler<TEvent>> handlerFactory)
             where TEvent : Event
         {
             _serviceCollection.AddSingleton<IEventHandler>(handlerFactory);
@@ -58,13 +58,13 @@ namespace SlackNet.AspNetCore
             return RegisterBlockActionHandler(c => new SpecificBlockActionHandler<TAction>(actionId, new ResolvedBlockActionHandler<TAction, THandler>(c)));
         }
 
-        public SlackServiceConfiguration RegisterBlockActionHandler<TAction>(IBlockActionHandler<TAction> handler) 
+        public SlackServiceConfiguration RegisterBlockActionHandler<TAction>(IBlockActionHandler<TAction> handler)
             where TAction : BlockAction
         {
             return RegisterBlockActionHandler(c => handler);
         }
 
-        public SlackServiceConfiguration RegisterBlockActionHandler<TAction>(Func<IServiceProvider, IBlockActionHandler<TAction>> handlerFactory) 
+        public SlackServiceConfiguration RegisterBlockActionHandler<TAction>(Func<IServiceProvider, IBlockActionHandler<TAction>> handlerFactory)
             where TAction : BlockAction
         {
             _serviceCollection.AddSingleton<IBlockActionHandler>(handlerFactory);
@@ -99,6 +99,25 @@ namespace SlackNet.AspNetCore
         }
 
         public SlackServiceConfiguration RegisterMessageActionHandler(Func<IServiceProvider, IMessageActionHandler> handlerFactory)
+        {
+            _serviceCollection.AddSingleton(handlerFactory);
+            return this;
+        }
+
+        public SlackServiceConfiguration RegisterShortcutHandler<THandler>()
+            where THandler : class, IShortcutHandler
+        {
+            _serviceCollection.AddTransient<THandler>();
+            return RegisterShortcutHandler(c => new ResolvedShortcutHandler<THandler>(c));
+        }
+
+
+        public SlackServiceConfiguration RegisterShortcutHandler(IShortcutHandler handler)
+        {
+            return RegisterShortcutHandler(c => handler);
+        }
+
+        public SlackServiceConfiguration RegisterShortcutHandler(Func<IServiceProvider, IShortcutHandler> handlerFactory)
         {
             _serviceCollection.AddSingleton(handlerFactory);
             return this;

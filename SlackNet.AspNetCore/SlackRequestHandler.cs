@@ -29,6 +29,7 @@ namespace SlackNet.AspNetCore
         private readonly ISlackBlockOptions _slackBlockOptions;
         private readonly ISlackInteractiveMessages _slackInteractiveMessages;
         private readonly ISlackMessageActions _slackMessageActions;
+        private readonly ISlackShortcuts _slackShortcuts;
         private readonly ISlackOptions _slackOptions;
         private readonly IDialogSubmissionHandler _dialogSubmissionHandler;
         private readonly ISlackViews _slackViews;
@@ -41,6 +42,7 @@ namespace SlackNet.AspNetCore
             ISlackBlockOptions slackBlockOptions,
             ISlackInteractiveMessages slackInteractiveMessages,
             ISlackMessageActions slackMessageActions,
+            ISlackShortcuts slackShortcuts,
             ISlackOptions slackOptions,
             IDialogSubmissionHandler dialogSubmissionHandler,
             ISlackViews slackViews,
@@ -52,6 +54,7 @@ namespace SlackNet.AspNetCore
             _slackBlockOptions = slackBlockOptions;
             _slackInteractiveMessages = slackInteractiveMessages;
             _slackMessageActions = slackMessageActions;
+            _slackShortcuts = slackShortcuts;
             _slackOptions = slackOptions;
             _dialogSubmissionHandler = dialogSubmissionHandler;
             _slackViews = slackViews;
@@ -110,6 +113,8 @@ namespace SlackNet.AspNetCore
                         return await HandleDialogCancellation(dialogCancellation).ConfigureAwait(false);
                     case MessageAction messageAction:
                         return await HandleMessageAction(messageAction).ConfigureAwait(false);
+                    case Shortcut shortcut:
+                        return await HandleShortcut(shortcut).ConfigureAwait(false);
                     case ViewSubmission viewSubmission:
                         return await HandleViewSubmission(viewSubmission).ConfigureAwait(false);
                     case ViewClosed viewClosed:
@@ -157,6 +162,12 @@ namespace SlackNet.AspNetCore
         private async Task<SlackResponse> HandleMessageAction(MessageAction messageAction)
         {
             await _slackMessageActions.Handle(messageAction).ConfigureAwait(false);
+            return new EmptyResponse(HttpStatusCode.OK);
+        }
+
+        private async Task<SlackResponse> HandleShortcut(Shortcut shortcut)
+        {
+            await _slackShortcuts.Handle(shortcut).ConfigureAwait(false);
             return new EmptyResponse(HttpStatusCode.OK);
         }
 
@@ -209,11 +220,11 @@ namespace SlackNet.AspNetCore
 
             if (!VerifyRequest(await ReadString(request).ConfigureAwait(false), request.Headers, command.Token, config))
                 return new StringResponse(HttpStatusCode.BadRequest, "Invalid signature/token");
-            
+
             var response = await _slackSlashCommands.Handle(command).ConfigureAwait(false);
 
-            return response == null 
-                ? (SlackResponse)new EmptyResponse(HttpStatusCode.OK) 
+            return response == null
+                ? (SlackResponse)new EmptyResponse(HttpStatusCode.OK)
                 : new JsonResponse(HttpStatusCode.OK, new SlashCommandMessageResponse(response));
         }
 
@@ -269,8 +280,8 @@ namespace SlackNet.AspNetCore
             new StreamReader(request.Body).ReadToEndAsync();
 
         private static bool VerifyRequest(string requestBody, IHeaderDictionary headers, string token, SlackEndpointConfiguration config) =>
-            !string.IsNullOrEmpty(config.SigningSecret) 
-                ? IsValidSignature(requestBody, headers, config.SigningSecret) 
+            !string.IsNullOrEmpty(config.SigningSecret)
+                ? IsValidSignature(requestBody, headers, config.SigningSecret)
                 : IsValidToken(token, config.VerificationToken);
 
         private static bool IsValidSignature(string requestBody, IHeaderDictionary headers, string signingSecret)
@@ -285,7 +296,7 @@ namespace SlackNet.AspNetCore
             }
         }
 
-        private static bool IsValidToken(string requestToken, string verificationToken) => 
+        private static bool IsValidToken(string requestToken, string verificationToken) =>
             string.IsNullOrEmpty(verificationToken)
             || requestToken == verificationToken;
 
