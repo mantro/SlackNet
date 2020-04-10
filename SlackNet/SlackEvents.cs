@@ -9,7 +9,7 @@ namespace SlackNet
 {
     public interface ISlackEvents
     {
-        void Handle(EventCallback eventCallback);
+        Task Handle(EventCallback eventCallback);
         IObservable<EventCallback> RawEvents { get; }
         IObservable<T> Events<T>() where T : Event;
         void AddHandler<T>(IEventHandler<T> handler) where T : Event;
@@ -20,9 +20,9 @@ namespace SlackNet
         private readonly SyncedSubject<EventCallback> _incomingEvents = new SyncedSubject<EventCallback>();
         private readonly List<IEventHandler> _handlers = new List<IEventHandler>();
 
-        public void Handle(EventCallback eventCallback)
+        public async Task Handle(EventCallback eventCallback)
         {
-            HandleGeneric((dynamic)eventCallback.Event);
+            await HandleGeneric((dynamic)eventCallback.Event);
             _incomingEvents.OnNext(eventCallback);
         }
 

@@ -82,7 +82,7 @@ namespace SlackNet.AspNetCore
                     return new StringResponse(HttpStatusCode.OK, urlVerification.Challenge);
 
                 case EventCallback eventCallback:
-                    _slackEvents.Handle(eventCallback);
+                    await _slackEvents.Handle(eventCallback);
                     return new EmptyResponse(HttpStatusCode.OK);
 
                 default:

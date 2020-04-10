@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using SlackNet.Events;
 
 namespace SlackNet.AspNetCore
@@ -14,7 +15,7 @@ namespace SlackNet.AspNetCore
                 AddHandler((dynamic)handler);
         }
 
-        public void Handle(EventCallback eventCallback) => _events.Handle(eventCallback);
+        public async Task Handle(EventCallback eventCallback) => await _events.Handle(eventCallback);
 
         public IObservable<EventCallback> RawEvents => _events.RawEvents;
 
