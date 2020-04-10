@@ -77,13 +77,19 @@ namespace SlackNet.WebApi
         /// <param name="viewDefinition">A view payload.</param>
         /// <param name="hash">A string that represents view state to protect against possible race conditions.</param>
         /// <param name="cancellationToken"></param>
-        public Task<ViewResponse> Publish(string userId, HomeViewDefinition viewDefinition, string hash = null, CancellationToken? cancellationToken = null) =>
-            _client.Post<ViewResponse>("views.publish", new Args
-                {
-                    { "user_id", userId },
-                    { "view", viewDefinition },
-                    { "hash", hash }
-                }, cancellationToken);
+        public Task<ViewResponse> Publish(string userId, HomeViewDefinition viewDefinition, string hash = null, CancellationToken? cancellationToken = null)
+        {
+            var args = new Args {
+                {"user_id", userId},
+                {"view", viewDefinition}
+            };
+
+            if(hash != null) {
+                args.Add("hash", hash);
+            }
+
+            return _client.Post<ViewResponse>("views.publish", args, cancellationToken);
+        }
 
         /// <summary>
         /// Push a new view onto the existing view stack by passing a view payload and a valid trigger ID
