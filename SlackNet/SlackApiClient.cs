@@ -67,7 +67,7 @@ namespace SlackNet
         /// <param name="args">Arguments to send to Slack. Authorization headers will be added automatically.</param>
         /// <param name="cancellationToken"></param>
         Task Post(string apiMethod, Args args, CancellationToken? cancellationToken);
-        
+
         /// <summary>
         /// Calls a Slack API that requires POST content.
         /// </summary>
@@ -76,7 +76,7 @@ namespace SlackNet
         /// <param name="args">Arguments to send to Slack. Authorization headers will be added automatically.</param>
         /// <param name="cancellationToken"></param>
         Task<T> Post<T>(string apiMethod, Args args, CancellationToken? cancellationToken) where T : class;
-        
+
         /// <summary>
         /// Calls a Slack API that requires POST content.
         /// </summary>
@@ -85,7 +85,7 @@ namespace SlackNet
         /// <param name="content">POST body content. Should be either <see cref="FormUrlEncodedContent"/> or <see cref="MultipartFormDataContent"/>.</param>
         /// <param name="cancellationToken"></param>
         Task Post(string apiMethod, Args args, HttpContent content, CancellationToken? cancellationToken);
-        
+
         /// <summary>
         /// Calls a Slack API that requires POST content.
         /// </summary>
@@ -95,6 +95,15 @@ namespace SlackNet
         /// <param name="content">POST body content. Should be either <see cref="FormUrlEncodedContent"/> or <see cref="MultipartFormDataContent"/>.</param>
         /// <param name="cancellationToken"></param>
         Task<T> Post<T>(string apiMethod, Args args, HttpContent content, CancellationToken? cancellationToken) where T : class;
+
+        /// <summary>
+        /// Calls a Slack API that requires POST content.
+        /// </summary>
+        /// <typeparam name="T">Type of response expected.</typeparam>
+        /// <param name="responseUrl">Response URL got from Slack.</param>
+        /// <param name="args">Arguments to send to Slack. Authorization headers will be added automatically.</param>
+        /// <param name="cancellationToken"></param>
+        Task<T> PostToResponseUrl<T>(string responseUrl, Args args, CancellationToken? cancellationToken) where T : class;
     }
 
     public class SlackApiClient : ISlackApiClient
@@ -173,7 +182,7 @@ namespace SlackNet
             var requestMessage = new HttpRequestMessage(HttpMethod.Get, Url(apiMethod, args));
             return Deserialize<T>(await _http.Execute<WebApiResponse>(requestMessage, cancellationToken ?? CancellationToken.None).ConfigureAwait(false));
         }
-        
+
         /// <summary>
         /// Calls a Slack API that requires POST content.
         /// </summary>
@@ -223,10 +232,27 @@ namespace SlackNet
             var requestMessage = new HttpRequestMessage(HttpMethod.Post, Url(apiMethod, args)) { Content = content };
             return Deserialize<T>(await _http.Execute<WebApiResponse>(requestMessage, cancellationToken ?? CancellationToken.None).ConfigureAwait(false));
         }
-            
+
+        /// <summary>
+        /// Calls a Slack API that requires POST content.
+        /// </summary>
+        /// <typeparam name="T">Type of response expected.</typeparam>
+        /// <param name="responseUrl">Response URL got from Slack.</param>
+        /// <param name="args">Arguments to send to Slack. Authorization headers will be added automatically.</param>
+        /// <param name="cancellationToken"></param>
+        public async Task<T> PostToResponseUrl<T>(string responseUrl, Args args, CancellationToken? cancellationToken) where T : class
+        {
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, responseUrl);
+            requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+            requestMessage.Content = new StringContent(JsonConvert.SerializeObject(args, _jsonSettings.SerializerSettings), Encoding.UTF8, "application/json");
+
+            var response = await _http.Execute<WebApiResponse>(requestMessage, cancellationToken ?? CancellationToken.None).ConfigureAwait(false);
+            return Deserialize<T>(response);
+        }
+
         private string Url(string apiMethod) =>
             _urlBuilder.Url(apiMethod, new Args());
-        
+
         private string Url(string apiMethod, Args args)
         {
             if (!args.ContainsKey("token"))
