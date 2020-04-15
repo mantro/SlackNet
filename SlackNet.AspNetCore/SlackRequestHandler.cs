@@ -95,7 +95,7 @@ namespace SlackNet.AspNetCore
             if (request.Method != "POST")
                 return new EmptyResponse(HttpStatusCode.MethodNotAllowed);
 
-            ReplaceRequestStreamWithMemoryStream(request);
+            await ReplaceRequestStreamWithMemoryStream(request);
 
             var interactionRequest = await DeserializePayload<InteractionRequest>(request).ConfigureAwait(false);
 
@@ -191,7 +191,7 @@ namespace SlackNet.AspNetCore
             if (request.Method != "POST")
                 return new EmptyResponse(HttpStatusCode.MethodNotAllowed);
 
-            ReplaceRequestStreamWithMemoryStream(request);
+            await ReplaceRequestStreamWithMemoryStream(request);
 
             var optionsRequest = await DeserializePayload<OptionsRequestBase>(request).ConfigureAwait(false);
 
@@ -214,7 +214,7 @@ namespace SlackNet.AspNetCore
             if (request.Method != "POST")
                 return new EmptyResponse(HttpStatusCode.MethodNotAllowed);
 
-            ReplaceRequestStreamWithMemoryStream(request);
+            await ReplaceRequestStreamWithMemoryStream(request);
 
             var command = await DeserializeForm<SlashCommand>(request).ConfigureAwait(false);
 
@@ -228,7 +228,7 @@ namespace SlackNet.AspNetCore
                 : new JsonResponse(HttpStatusCode.OK, new SlashCommandMessageResponse(response));
         }
 
-        private static async void ReplaceRequestStreamWithMemoryStream(HttpRequest request)
+        private static async Task ReplaceRequestStreamWithMemoryStream(HttpRequest request)
         {
             var buffer = new MemoryStream();
             await request.Body.CopyToAsync(buffer).ConfigureAwait(false);
