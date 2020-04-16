@@ -37,7 +37,6 @@ namespace SlackNet.AspNetCore
         private readonly IAsyncViewSubmissionHandler _viewSubmissionHandler;
         private readonly IAsyncSlashCommandHandler _slashCommandHandler;
         private readonly SlackJsonSettings _jsonSettings;
-
         public SlackRequestHandler(
             IEventHandler eventHandler,
             IAsyncBlockActionHandler blockActionHandler,
