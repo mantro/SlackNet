@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -7,6 +8,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SlackNet.Events;
@@ -35,6 +37,7 @@ namespace SlackNet.AspNetCore
         private readonly ISlackViews _slackViews;
         private readonly ISlackSlashCommands _slackSlashCommands;
         private readonly SlackJsonSettings _jsonSettings;
+        private readonly ILogger<SlackRequestHandler> _logger;
 
         public SlackRequestHandler(
             ISlackEvents slackEvents,
@@ -47,7 +50,8 @@ namespace SlackNet.AspNetCore
             IDialogSubmissionHandler dialogSubmissionHandler,
             ISlackViews slackViews,
             ISlackSlashCommands slackSlashCommands,
-            SlackJsonSettings jsonSettings)
+            SlackJsonSettings jsonSettings,
+            ILogger<SlackRequestHandler> logger)
         {
             _slackEvents = slackEvents;
             _slackBlockActions = slackBlockActions;
@@ -60,6 +64,7 @@ namespace SlackNet.AspNetCore
             _slackViews = slackViews;
             _slackSlashCommands = slackSlashCommands;
             _jsonSettings = jsonSettings;
+            _logger = logger;
         }
 
         public async Task<SlackResponse> HandleEventRequest(HttpRequest request, SlackEndpointConfiguration config)
@@ -82,7 +87,21 @@ namespace SlackNet.AspNetCore
                     return new StringResponse(HttpStatusCode.OK, urlVerification.Challenge);
 
                 case EventCallback eventCallback:
-                    await _slackEvents.Handle(eventCallback);
+                    // we want the http call to return as soon as possible because of Slacks 3s time limit.
+                    // this is why the execution of the async handling is forked off into a new async tree
+                    // note: this way you cannot denote a problem via HTTP error code
+#pragma warning disable 4014
+                    Task.Factory.StartNew(() => _slackEvents.Handle(eventCallback))
+                        .ContinueWith(task =>
+                        {
+                            var innerTask = task.Result;
+                            if (innerTask.IsFaulted)
+                            {
+                                _logger.LogError(innerTask.Exception, "Slack request handler faulted");
+                            }
+                        });
+
+#pragma warning restore 4014
                     return new EmptyResponse(HttpStatusCode.OK);
 
                 default:
