@@ -83,6 +83,8 @@ namespace SlackNet.Tests
 
         private static void AllMethodsShouldUseSameSlackMethodGroup(FakeClient client, MethodInfo method, ref string slackMethodGroup)
         {
+            if (method.Name == "PostToResponseUrl") return;
+
             var methodGroup = string.Join('.', client.SlackMethod.Split('.').SkipLast(1));
             if (slackMethodGroup == null)
                 slackMethodGroup = methodGroup;
@@ -177,7 +179,9 @@ namespace SlackNet.Tests
 
             public Task<T> PostToResponseUrl<T>(string responseUrl, Args args, CancellationToken? cancellationToken) where T : class
             {
-                throw new NotImplementedException();
+                SlackMethod = responseUrl;
+                Args = args;
+                return Task.FromResult(Activator.CreateInstance<T>());
             }
 
             public IApiApi Api { get; }
