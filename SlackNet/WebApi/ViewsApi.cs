@@ -113,13 +113,22 @@ namespace SlackNet.WebApi
         /// <param name="externalId">A unique identifier of the view set by the developer. Must be unique for all views on a team.</param>
         /// <param name="hash">A string that represents view state to protect against possible race conditions.</param>
         /// <param name="cancellationToken"></param>
-        public Task<ViewResponse> UpdateByExternalId(ViewDefinition view, string externalId, string hash = null, CancellationToken? cancellationToken = null) =>
-            _client.Post<ViewResponse>("views.update", new Args
-                {
-                    { "view", view },
-                    { "external_id", externalId },
-                    { "hash", hash }
-                }, cancellationToken);
+        public Task<ViewResponse> UpdateByExternalId(ViewDefinition view, string externalId, string hash = null, CancellationToken? cancellationToken = null)
+        {
+            var args = new Args
+            {
+                {"view", view},
+                {"external_id", externalId},
+            };
+
+            if (hash != null)
+            {
+                args.Add("hash", hash);
+            }
+
+            return _client.Post<ViewResponse>("views.update", args, cancellationToken);
+        }
+
 
         /// <summary>
         /// Update a view by passing a new view definition along with the <see cref="ViewInfo.Id"/> returned by <see cref="Open"/> or the <see cref="ViewDefinition.ExternalId"/>.
@@ -128,12 +137,20 @@ namespace SlackNet.WebApi
         /// <param name="hash">A string that represents view state to protect against possible race conditions.</param>
         /// <param name="viewId">A unique identifier of the view to be updated.</param>
         /// <param name="cancellationToken"></param>
-        public Task<ViewResponse> UpdateByViewId(ViewDefinition view, string viewId, string hash = null, CancellationToken? cancellationToken = null) =>
-            _client.Post<ViewResponse>("views.update", new Args
-                {
-                    { "view", view },
-                    { "view_id", viewId },
-                    { "hash", hash }
-                }, cancellationToken);
+        public Task<ViewResponse> UpdateByViewId(ViewDefinition view, string viewId, string hash = null, CancellationToken? cancellationToken = null)
+        {
+            var args = new Args
+            {
+                {"view", view},
+                {"view_id", viewId},
+            };
+
+            if (hash != null)
+            {
+                args.Add("hash", hash);
+            }
+
+            return _client.Post<ViewResponse>("views.update", args, cancellationToken);
+        }
     }
 }
