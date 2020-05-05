@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
@@ -23,7 +24,7 @@ namespace SlackNet.WebApi
         /// Default value fetches the first "page" of the collection.
         /// </param>
         /// <param name="cancellationToken"></param>
-        Task<ConversationListResponse> Conversations(bool excludeArchived = false, int limit = 100, IEnumerable<ConversationType> types = null, string userId = null, string cursor = null, CancellationToken? cancellationToken = null);
+        Task<ConversationListResponse> Conversations(bool excludeArchived = false, int limit = 100, string types = null, string userId = null, string cursor = null, CancellationToken? cancellationToken = null);
 
         /// <summary>
         /// Allows the user to delete their profile image. It will clear whatever image is currently set.
@@ -132,7 +133,7 @@ namespace SlackNet.WebApi
         /// Default value fetches the first "page" of the collection.
         /// </param>
         /// <param name="cancellationToken"></param>
-        public Task<ConversationListResponse> Conversations(bool excludeArchived = false, int limit = 100, IEnumerable<ConversationType> types = null, string userId = null, string cursor = null, CancellationToken? cancellationToken = null) =>
+        public Task<ConversationListResponse> Conversations(bool excludeArchived = false, int limit = 100, string types = null, string userId = null, string cursor = null, CancellationToken? cancellationToken = null) =>
             _client.Get<ConversationListResponse>("users.conversations", new Args
                 {
                     { "cursor", cursor },
