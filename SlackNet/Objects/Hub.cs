@@ -49,5 +49,7 @@ namespace SlackNet
         /// The user ID of the member that created this channel.
         /// </summary>
         public string Creator { get; set; }
+
+        public string User { get; set; }
     }
 }
