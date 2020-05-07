@@ -89,7 +89,7 @@ namespace SlackNet.WebApi
                 {
                     { "ts", ts },
                     { "channel", channelId },
-                    { "as_user", asUser }
+                    // { "as_user", asUser }
                 }, cancellationToken);
 
         /// <summary>
@@ -151,7 +151,7 @@ namespace SlackNet.WebApi
             args["unfurl_links"] = message.UnfurlLinks;
             args["unfurl_media"] = message.UnfurlMedia;
             args["username"] = message.Username;
-            args["as_user"] = message.AsUser;
+            // args["as_user"] = message.AsUser;
             args["icon_url"] = message.IconUrl;
             args["icon_emoji"] = message.IconEmoji;
             args["thread_ts"] = message.ThreadTs;
@@ -171,7 +171,7 @@ namespace SlackNet.WebApi
                         { "channel", message.Channel },
                         { "text", message.Text },
                         { "user", userId },
-                        { "as_user", message.AsUser },
+                        // { "as_user", message.AsUser },
                         { "attachments", message.Attachments },
                         { "blocks", message.Blocks },
                         { "link_names", message.LinkNames },
@@ -217,7 +217,7 @@ namespace SlackNet.WebApi
                         { "blocks", messageUpdate.Blocks },
                         { "parse", messageUpdate.Parse },
                         { "link_names", messageUpdate.LinkNames },
-                        { "as_user", messageUpdate.AsUser }
+                        // { "as_user", messageUpdate.AsUser }
                     },
                 cancellationToken);
     }
