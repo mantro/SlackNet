@@ -22,6 +22,7 @@ namespace SlackNet
         public bool Has2FA { get; set; }
         public string TwoFactorType { get; set; }
         public EnterpriseUser EnterpriseUser { get; set; }
+        public bool IsBot { get; set; }
 
         public override string ToString() => Link.User(Id).ToString();
     }
