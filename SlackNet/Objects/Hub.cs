@@ -41,5 +41,7 @@ namespace SlackNet
         /// True if the calling member is part of the channel.
         /// </summary>
         public bool IsMember { get; set; }
+
+        public string User { get; set; }
     }
 }
