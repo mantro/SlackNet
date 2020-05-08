@@ -54,7 +54,7 @@ namespace SlackNet.WebApi
         /// <summary>
         /// Pass True to post the message as the authed user, instead of as a bot.
         /// </summary>
-        bool AsUser { get; }
+        bool? AsUser { get; }
 
         /// <summary>
         /// URL to an image to use as the icon for this message. Must be used in conjunction with <see cref="AsUser"/> set to False, otherwise ignored.
@@ -72,7 +72,7 @@ namespace SlackNet.WebApi
         string ThreadTs { get; }
 
         /// <summary>
-        /// Used in conjunction with <see cref="ThreadTs"/> and indicates whether reply should be made visible to everyone in the channel or conversation. 
+        /// Used in conjunction with <see cref="ThreadTs"/> and indicates whether reply should be made visible to everyone in the channel or conversation.
         /// </summary>
         bool ReplyBroadcast { get; }
     }
@@ -121,7 +121,7 @@ namespace SlackNet.WebApi
         /// <summary>
         /// Pass True to post the message as the authed user, instead of as a bot.
         /// </summary>
-        public bool AsUser { get; set; }
+        public bool? AsUser { get; set; }
         /// <summary>
         /// URL to an image to use as the icon for this message. Must be used in conjunction with <see cref="AsUser"/> set to False, otherwise ignored.
         /// Not supported when posting an ephemeral message.
@@ -138,7 +138,7 @@ namespace SlackNet.WebApi
         /// </summary>
         public string ThreadTs { get; set; }
         /// <summary>
-        /// Used in conjunction with <see cref="ThreadTs"/> and indicates whether reply should be made visible to everyone in the channel or conversation. 
+        /// Used in conjunction with <see cref="ThreadTs"/> and indicates whether reply should be made visible to everyone in the channel or conversation.
         /// Not supported when posting an ephemeral message.
         /// </summary>
         public bool ReplyBroadcast { get; set; }

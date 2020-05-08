@@ -15,7 +15,7 @@ namespace SlackNet.WebApi
         /// <param name="channelId">Channel containing the message to be deleted.</param>
         /// <param name="asUser">Pass True to delete the message as the authed user. Bot users in this context are considered authed users.</param>
         /// <param name="cancellationToken"></param>
-        Task<MessageTsResponse> Delete(string ts, string channelId, bool asUser = false, CancellationToken? cancellationToken = null);
+        Task<MessageTsResponse> Delete(string ts, string channelId, bool? AsUser = null, CancellationToken? cancellationToken = null);
 
         /// <summary>
         /// Sends a /me message to a channel from the calling user.
@@ -102,7 +102,7 @@ namespace SlackNet.WebApi
         /// <param name="channelId">Channel containing the message to be deleted.</param>
         /// <param name="asUser">Pass True to delete the message as the authed user. Bot users in this context are considered authed users.</param>
         /// <param name="cancellationToken"></param>
-        public Task<MessageTsResponse> Delete(string ts, string channelId, bool asUser = false, CancellationToken? cancellationToken = null) =>
+        public Task<MessageTsResponse> Delete(string ts, string channelId, bool? asUser = null, CancellationToken? cancellationToken = null) =>
             _client.Post<MessageTsResponse>("chat.delete", new Args
                 {
                     { "ts", ts },
@@ -169,13 +169,17 @@ namespace SlackNet.WebApi
             args["unfurl_links"] = message.UnfurlLinks;
             args["unfurl_media"] = message.UnfurlMedia;
             args["username"] = message.Username;
-            args["as_user"] = message.AsUser;
             args["icon_url"] = message.IconUrl;
             args["icon_emoji"] = message.IconEmoji;
             args["thread_ts"] = message.ThreadTs;
             args["reply_broadcast"] = message.ReplyBroadcast;
+
+            if (message.AsUser != null) {
+                args["as_user"] = message.AsUser;
+            }
             return args;
         }
+
 
         /// <summary>
         /// Sends an ephemeral message to a user in a channel.
