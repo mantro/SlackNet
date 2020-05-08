@@ -72,7 +72,7 @@ namespace SlackNet.WebApi
         string ThreadTs { get; }
 
         /// <summary>
-        /// Used in conjunction with <see cref="ThreadTs"/> and indicates whether reply should be made visible to everyone in the channel or conversation. 
+        /// Used in conjunction with <see cref="ThreadTs"/> and indicates whether reply should be made visible to everyone in the channel or conversation.
         /// </summary>
         bool ReplyBroadcast { get; }
     }
@@ -138,7 +138,7 @@ namespace SlackNet.WebApi
         /// </summary>
         public string ThreadTs { get; set; }
         /// <summary>
-        /// Used in conjunction with <see cref="ThreadTs"/> and indicates whether reply should be made visible to everyone in the channel or conversation. 
+        /// Used in conjunction with <see cref="ThreadTs"/> and indicates whether reply should be made visible to everyone in the channel or conversation.
         /// Not supported when posting an ephemeral message.
         /// </summary>
         public bool ReplyBroadcast { get; set; }
