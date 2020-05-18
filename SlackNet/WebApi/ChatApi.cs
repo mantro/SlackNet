@@ -48,16 +48,6 @@ namespace SlackNet.WebApi
         /// <param name="cancellationToken"></param>
         Task<PostMessageResponse> PostEphemeral(string userId, Message message, CancellationToken? cancellationToken = null);
 
-
-        /// <summary>
-        /// Updates messages by response URL
-        /// </summary>
-        /// <param name="responseUrl">Response URL received from Slack from an action</param>
-        /// <param name="userId">ID of the user who will receive the ephemeral message. The user should be in the channel specified by the channel argument.</param>
-        /// <param name="message">The message to post. Not all message properties are supported by <c>PostEphemeral</c>.</param>
-        /// <param name="cancellationToken"></param>
-        Task<WebApiResponse> PostToResponseUrl(string responseUrl, string userId, Message message, CancellationToken? cancellationToken = null);
-
         /// <summary>
         /// Attaches Slack app unfurl behavior to a specified and relevant message.
         /// A user token is required as this method does not support bot user tokens.
@@ -194,24 +184,6 @@ namespace SlackNet.WebApi
                         { "text", message.Text },
                         { "user", userId },
                         { "as_user", message.AsUser },
-                        { "attachments", message.Attachments },
-                        { "blocks", message.Blocks },
-                        { "link_names", message.LinkNames },
-                        { "parse", message.Parse }
-                    },
-                cancellationToken);
-
-        /// <summary>
-        /// Updates messages by response URL
-        /// </summary>
-        /// <param name="responseUrl">Response URL received from Slack from an action</param>
-        /// <param name="userId">ID of the user who will receive the ephemeral message. The user should be in the channel specified by the channel argument.</param>
-        /// <param name="message">The message to post. Not all message properties are supported by <c>PostEphemeral</c>.</param>
-        /// <param name="cancellationToken"></param>
-        public Task<WebApiResponse> PostToResponseUrl(string responseUrl, string userId, Message message, CancellationToken? cancellationToken = null) =>
-            _client.PostToResponseUrl<WebApiResponse>(responseUrl, new Args
-                    {
-                        { "text", message.Text },
                         { "attachments", message.Attachments },
                         { "blocks", message.Blocks },
                         { "link_names", message.LinkNames },
