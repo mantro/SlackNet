@@ -83,8 +83,6 @@ namespace SlackNet.Tests
 
         private static void AllMethodsShouldUseSameSlackMethodGroup(FakeClient client, MethodInfo method, ref string slackMethodGroup)
         {
-            if (method.Name == "PostToResponseUrl") return;
-
             var methodGroup = string.Join('.', client.SlackMethod.Split('.').SkipLast(1));
             if (slackMethodGroup == null)
                 slackMethodGroup = methodGroup;
@@ -96,7 +94,7 @@ namespace SlackNet.Tests
             args.Keys.AllItemsSatisfy(arg => arg.ShouldMatch("[a-z_]", $"{method.DeclaringType.Name}.{method.Name} has incorrect casing for argument {arg}"));
 
         private static object DummyValue(ParameterInfo param) =>
-              param.ParameterType == typeof(string) && param.Name == "contentType" ? "text/png"
+            param.ParameterType == typeof(string) && param.Name == "contentType" ? "text/png"
             : param.ParameterType == typeof(string) ? "foo"
             : param.ParameterType == typeof(int) ? 0
             : param.ParameterType == typeof(int?) ? null
@@ -177,16 +175,14 @@ namespace SlackNet.Tests
                 return Task.FromResult(Activator.CreateInstance<T>());
             }
 
-            public Task Respond(string responseUrl, IReadOnlyMessage message, CancellationToken? cancellationToken)
+           public Task Respond(string responseUrl, IReadOnlyMessage message, CancellationToken? cancellationToken)
             {
                 throw new NotImplementedException();
             }
 
-            public ISlackApiClient WithAccessToken(string accessToken)
+           public ISlackApiClient WithAccessToken(string accessToken)
             {
-                SlackMethod = responseUrl;
-                Args = args;
-                return Task.FromResult(Activator.CreateInstance<T>());
+                throw new NotImplementedException();
             }
 
             public IApiApi Api { get; }
