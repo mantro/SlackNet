@@ -36,8 +36,7 @@ namespace SlackNet.WebApi
         /// <param name="code">The code param returned via the OAuth callback.</param>
         /// <param name="redirectUrl">This must match the originally submitted URI (if one was sent).</param>
         /// <param name="cancellationToken"></param>
-        public Task<OAuthV2AccessResponse> Access(string clientId, string clientSecret, string code,
-            string redirectUrl = null, CancellationToken? cancellationToken = null) =>
+        public Task<OAuthV2AccessResponse> Access(string clientId, string clientSecret, string code, string redirectUrl = null, CancellationToken? cancellationToken = null) =>
             _client.Get<OAuthV2AccessResponse>("oauth.v2.access", new Args
             {
                 {"client_id", clientId},
@@ -45,17 +44,5 @@ namespace SlackNet.WebApi
                 {"code", code},
                 {"redirect_uri", redirectUrl}
             }, cancellationToken);
-
-        // var args = new List<KeyValuePair<string, string>>
-        // {
-        //     new KeyValuePair<string, string>("client_id", clientId),
-        //     new KeyValuePair<string, string>("client_secret", clientSecret),
-        //     new KeyValuePair<string, string>("code", code),
-        //     new KeyValuePair<string, string>("redirect_uri", redirectUrl),
-        // };
-        // var content = new FormUrlEncodedContent(args);
-        // var requestMessage = new HttpRequestMessage(HttpMethod.Post, "https://slack.com/api/oauth.v2.access?token=xoxb-1026439339031-1054960914048-6AHHsm3TqsL3wiNEBPxsIOaX") { Content = content};
-        // var response =  await _http.Execute<WebApiResponse>(requestMessage);
-        // return new OAuthV2AccessResponse();
     }
 }
