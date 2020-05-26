@@ -216,6 +216,7 @@ namespace SlackNet.Tests
             public IUsersApi Users { get; }
             public IUserProfileApi UserProfile { get; }
             public IViewsApi Views { get; }
+            public IOAuthV2Api OAuthV2 { get; }
         }
     }
 }
