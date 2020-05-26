@@ -500,6 +500,16 @@ namespace SlackNet.AspNetCore
         }
 
         #endregion Slash commands
+        
+        #region OAuthV2
+        
+        public SlackServiceConfiguration RegisterOAuthV2RequestHandler<THandler>()
+            where THandler : class, IOAuthV2RequestHandler
+        {
+            _serviceCollection.TryAddScoped<THandler>();
+            return RegisterCompositeItem<IOAuthV2RequestHandler>(p => new ResolvedOAuthV2RequestHandler(p, s => s.GetRequiredService<THandler>()));
+        }
+        #endregion
 
         /// <summary>
         /// Take over all interactive message handling with your own handler.

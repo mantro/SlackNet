@@ -32,5 +32,9 @@ namespace SlackNet.AzureFunctionExample
         [FunctionName("command")]
         public Task<SlackResult> Command([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest request) => 
             _requestHandler.HandleSlashCommandRequest(request, _endpointConfig);
+        
+        [FunctionName("oauth")]
+        public Task<SlackResult> OAuth([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest request) => 
+            _requestHandler.HandleOAuthV2Request(request, _endpointConfig);
     }
 }

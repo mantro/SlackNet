@@ -22,6 +22,8 @@ namespace SlackNet.AspNetCore
         Task<SlackResult> HandleActionRequest(HttpRequest request, SlackEndpointConfiguration config);
         Task<SlackResult> HandleOptionsRequest(HttpRequest request, SlackEndpointConfiguration config);
         Task<SlackResult> HandleSlashCommandRequest(HttpRequest request, SlackEndpointConfiguration config);
+        Task<SlackResult> HandleOAuthV2Request(HttpRequest request, SlackEndpointConfiguration config);
+
     }
 
     class SlackRequestHandler : ISlackRequestHandler
@@ -36,6 +38,7 @@ namespace SlackNet.AspNetCore
         private readonly IDialogSubmissionHandler _dialogSubmissionHandler;
         private readonly IAsyncViewSubmissionHandler _viewSubmissionHandler;
         private readonly IAsyncSlashCommandHandler _slashCommandHandler;
+        private readonly IOAuthV2RequestHandler _oAuthV2RequestHandler;
         private readonly SlackJsonSettings _jsonSettings;
 
         public SlackRequestHandler(
@@ -49,7 +52,8 @@ namespace SlackNet.AspNetCore
             IDialogSubmissionHandler dialogSubmissionHandler,
             IAsyncViewSubmissionHandler viewSubmissionHandler,
             IAsyncSlashCommandHandler slashCommandHandler,
-            SlackJsonSettings jsonSettings)
+            SlackJsonSettings jsonSettings, 
+            IOAuthV2RequestHandler oAuthV2RequestHandler)
         {
             _eventHandler = eventHandler;
             _blockActionHandler = blockActionHandler;
@@ -62,6 +66,7 @@ namespace SlackNet.AspNetCore
             _viewSubmissionHandler = viewSubmissionHandler;
             _slashCommandHandler = slashCommandHandler;
             _jsonSettings = jsonSettings;
+            _oAuthV2RequestHandler = oAuthV2RequestHandler;
         }
 
         public async Task<SlackResult> HandleEventRequest(HttpRequest request, SlackEndpointConfiguration config)
@@ -237,6 +242,15 @@ namespace SlackNet.AspNetCore
                     ? (SlackResult)new EmptyResult(HttpStatusCode.OK)
                     : new JsonResult(_jsonSettings, HttpStatusCode.OK, new SlashCommandMessageResponse(response)),
                 () => new EmptyResult(HttpStatusCode.OK)).ConfigureAwait(false);
+        }
+        
+        
+        public Task<SlackResult> HandleOAuthV2Request(HttpRequest oAuthV2Request, SlackEndpointConfiguration config)
+        {
+            return RespondAsync(r => 
+                _oAuthV2RequestHandler
+                    .Handle(oAuthV2Request.Query
+                        .First(q => q.Key == "code").Value));
         }
 
         private async Task<SlackResult> HandleLegacyOptionsRequest(OptionsRequest optionsRequest)

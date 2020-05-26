@@ -29,6 +29,8 @@ namespace SlackNet.AspNetCore
                 await Respond(context.Response, await _requestHandler.HandleOptionsRequest(context.Request, _configuration).ConfigureAwait(false)).ConfigureAwait(false);
             else if (context.Request.Path == $"/{_configuration.RoutePrefix}/command")
                 await Respond(context.Response, await _requestHandler.HandleSlashCommandRequest(context.Request, _configuration).ConfigureAwait(false)).ConfigureAwait(false);
+            if (context.Request.Path == $"/{_configuration.RoutePrefix}/oauth")
+                await Respond(context.Response, await _requestHandler.HandleOAuthV2Request(context.Request, _configuration).ConfigureAwait(false)).ConfigureAwait(false);
             else
                 await _next(context).ConfigureAwait(false);
         }

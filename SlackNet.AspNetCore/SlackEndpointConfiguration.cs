@@ -9,6 +9,7 @@
         /// <br /><c>/{RoutePrefix}/action</c> - Interactive component requests
         /// <br /><c>/{RoutePrefix}/options</c> - Options loading (for message menus)
         /// <br /><c>/{RoutePrefix}/command</c> - Slash command requests
+        /// <br /><c>/{RoutePrefix}/oauth</c> - OAuth requests
         /// </summary>
         public SlackEndpointConfiguration MapToPrefix(string routePrefix)
         {
