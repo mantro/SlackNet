@@ -22,7 +22,7 @@ namespace SlackNet.AspNetCore
         Task<SlackResult> HandleActionRequest(HttpRequest request, SlackEndpointConfiguration config);
         Task<SlackResult> HandleOptionsRequest(HttpRequest request, SlackEndpointConfiguration config);
         Task<SlackResult> HandleSlashCommandRequest(HttpRequest request, SlackEndpointConfiguration config);
-        Task<SlackResult> HandleOAuthV2Request(HttpRequest request, SlackEndpointConfiguration config);
+        Task HandleOAuthV2Request(HttpRequest request, SlackEndpointConfiguration config);
 
     }
 
@@ -52,8 +52,8 @@ namespace SlackNet.AspNetCore
             IDialogSubmissionHandler dialogSubmissionHandler,
             IAsyncViewSubmissionHandler viewSubmissionHandler,
             IAsyncSlashCommandHandler slashCommandHandler,
-            SlackJsonSettings jsonSettings, 
-            IOAuthV2RequestHandler oAuthV2RequestHandler)
+            IOAuthV2RequestHandler oAuthV2RequestHandler,
+            SlackJsonSettings jsonSettings)
         {
             _eventHandler = eventHandler;
             _blockActionHandler = blockActionHandler;
@@ -65,8 +65,8 @@ namespace SlackNet.AspNetCore
             _dialogSubmissionHandler = dialogSubmissionHandler;
             _viewSubmissionHandler = viewSubmissionHandler;
             _slashCommandHandler = slashCommandHandler;
-            _jsonSettings = jsonSettings;
             _oAuthV2RequestHandler = oAuthV2RequestHandler;
+            _jsonSettings = jsonSettings;
         }
 
         public async Task<SlackResult> HandleEventRequest(HttpRequest request, SlackEndpointConfiguration config)
@@ -95,6 +95,15 @@ namespace SlackNet.AspNetCore
                 default:
                     return new StringResult(HttpStatusCode.BadRequest, "Unrecognized content");
             }
+        }
+
+    public async Task HandleOAuthV2Request(HttpRequest request, SlackEndpointConfiguration config)
+    {
+        if (request.Method != "GET") return;
+
+        var code = request.Query.First(q => q.Key == "code").Value;
+
+        await _oAuthV2RequestHandler.Handle(code).ConfigureAwait(false);
         }
 
         public async Task<SlackResult> HandleActionRequest(HttpRequest request, SlackEndpointConfiguration config)
@@ -180,7 +189,7 @@ namespace SlackNet.AspNetCore
         private Task<SlackResult> HandleViewClosed(ViewClosed viewClosed) =>
             RespondAsync(r => _viewSubmissionHandler.HandleClose(viewClosed, r));
 
-        private static Task<SlackResult> RespondAsync(Func<Responder, Task> handle) => 
+        private static Task<SlackResult> RespondAsync(Func<Responder, Task> handle) =>
             RespondAsync<int>(r => handle(() => r(0)), _ => new EmptyResult(HttpStatusCode.OK), () => new EmptyResult(HttpStatusCode.OK));
 
         private static async Task<SlackResult> RespondAsync<T>(Func<Responder<T>, Task> handle, Func<T, SlackResult> buildResult, Func<SlackResult> defaultResult)
@@ -243,15 +252,6 @@ namespace SlackNet.AspNetCore
                     : new JsonResult(_jsonSettings, HttpStatusCode.OK, new SlashCommandMessageResponse(response)),
                 () => new EmptyResult(HttpStatusCode.OK)).ConfigureAwait(false);
         }
-        
-        
-        public Task<SlackResult> HandleOAuthV2Request(HttpRequest oAuthV2Request, SlackEndpointConfiguration config)
-        {
-            return RespondAsync(r => 
-                _oAuthV2RequestHandler
-                    .Handle(oAuthV2Request.Query
-                        .First(q => q.Key == "code").Value));
-        }
 
         private async Task<SlackResult> HandleLegacyOptionsRequest(OptionsRequest optionsRequest)
         {
@@ -298,8 +298,8 @@ namespace SlackNet.AspNetCore
             new StreamReader(request.Body).ReadToEndAsync();
 
         private static bool VerifyRequest(string requestBody, IHeaderDictionary headers, string token, SlackEndpointConfiguration config) =>
-            !string.IsNullOrEmpty(config.SigningSecret) 
-                ? IsValidSignature(requestBody, headers, config.SigningSecret) 
+            !string.IsNullOrEmpty(config.SigningSecret)
+                ? IsValidSignature(requestBody, headers, config.SigningSecret)
                 : IsValidToken(token, config.VerificationToken);
 
         private static bool IsValidSignature(string requestBody, IHeaderDictionary headers, string signingSecret)
@@ -314,7 +314,7 @@ namespace SlackNet.AspNetCore
             }
         }
 
-        private static bool IsValidToken(string requestToken, string verificationToken) => 
+        private static bool IsValidToken(string requestToken, string verificationToken) =>
             string.IsNullOrEmpty(verificationToken)
             || requestToken == verificationToken;
 

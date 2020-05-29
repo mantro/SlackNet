@@ -25,12 +25,15 @@ namespace SlackNet.AspNetCore
                 await Respond(context.Response, await _requestHandler.HandleEventRequest(context.Request, _configuration).ConfigureAwait(false)).ConfigureAwait(false);
             else if (context.Request.Path == $"/{_configuration.RoutePrefix}/action")
                 await Respond(context.Response, await _requestHandler.HandleActionRequest(context.Request, _configuration).ConfigureAwait(false)).ConfigureAwait(false);
-            else if (context.Request.Path == $"/{_configuration.RoutePrefix}/options") 
+            else if (context.Request.Path == $"/{_configuration.RoutePrefix}/options")
                 await Respond(context.Response, await _requestHandler.HandleOptionsRequest(context.Request, _configuration).ConfigureAwait(false)).ConfigureAwait(false);
             else if (context.Request.Path == $"/{_configuration.RoutePrefix}/command")
                 await Respond(context.Response, await _requestHandler.HandleSlashCommandRequest(context.Request, _configuration).ConfigureAwait(false)).ConfigureAwait(false);
-            if (context.Request.Path == $"/{_configuration.RoutePrefix}/oauth")
-                await Respond(context.Response, await _requestHandler.HandleOAuthV2Request(context.Request, _configuration).ConfigureAwait(false)).ConfigureAwait(false);
+            if (context.Request.Path == $"/{_configuration.RoutePrefix}/oauth/v2")
+            {
+                await _requestHandler.HandleOAuthV2Request(context.Request, _configuration).ConfigureAwait(false);
+                context.Response.Redirect(_configuration.OAuthRedirectUrl);
+            }
             else
                 await _next(context).ConfigureAwait(false);
         }

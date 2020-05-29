@@ -9,7 +9,7 @@
         /// <br /><c>/{RoutePrefix}/action</c> - Interactive component requests
         /// <br /><c>/{RoutePrefix}/options</c> - Options loading (for message menus)
         /// <br /><c>/{RoutePrefix}/command</c> - Slash command requests
-        /// <br /><c>/{RoutePrefix}/oauth</c> - OAuth requests
+        /// <br /><c>/{RoutePrefix}/oauth/v2</c> - OAuth requests
         /// </summary>
         public SlackEndpointConfiguration MapToPrefix(string routePrefix)
         {
@@ -37,8 +37,20 @@
             return this;
         }
 
+        /// <summary>
+        /// Set a redirect URL to forward after successful OAuth flow
+        /// </summary>
+        public SlackEndpointConfiguration UseOAuthRedirectUrl(string oAuthRedirectUrl)
+        {
+            OAuthRedirectUrl = oAuthRedirectUrl;
+            return this;
+        }
+
+
         public string RoutePrefix { get; private set; } = "slack";
         public string VerificationToken { get; private set; }
         public string SigningSecret { get; private set; }
+
+        public string OAuthRedirectUrl { get; private set; }
     }
 }

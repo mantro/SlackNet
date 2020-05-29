@@ -29,9 +29,9 @@ namespace SlackNet.AspNetCore
             serviceCollection.TryAddSingleton<IAsyncSlashCommandHandler, SwitchingSlashCommandHandler>();
             serviceCollection.TryAddSingleton<IInteractiveMessageHandler, SwitchingInteractiveMessageHandler>();
             serviceCollection.TryAddSingleton<IDialogSubmissionHandler, SwitchingDialogSubmissionHandler>();
-            serviceCollection.TryAddSingleton<IOAuthV2RequestHandler, ResolvedOAuthV2RequestHandler>();
+            serviceCollection.TryAddSingleton<IOAuthV2RequestHandler, CompositeOAuthV2RequestHandler>();
             serviceCollection.AddTransient<ISlackApiClient>(c => new SlackApiClient(c.GetService<IHttp>(), c.GetService<ISlackUrlBuilder>(), c.GetService<SlackJsonSettings>(), configuration.ApiToken));
-            
+
             return serviceCollection;
         }
 
@@ -42,6 +42,7 @@ namespace SlackNet.AspNetCore
         /// <br /><c>/slack/action</c> - Interactive component requests
         /// <br /><c>/slack/options</c> - Options loading (for message menus)
         /// <br /><c>/slack/command</c> - Slash command requests
+        /// <br /><c>/slack/oauth/v2</c> - Slash OAuth V2 requests
         /// </summary>
         public static IApplicationBuilder UseSlackNet(this IApplicationBuilder app, Action<SlackEndpointConfiguration> configure = null)
         {
