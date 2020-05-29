@@ -43,6 +43,9 @@ namespace SlackNet.Tests
             ExpectReplaceMethod(publicMethods, nameof(SSC.ReplaceGlobalShortcutHandling), typeof(IGlobalShortcutHandler));
             ExpectRegistrationTriplet(publicMethods, nameof(SSC.RegisterGlobalShortcutHandler), typeof(IGlobalShortcutHandler), new Type[0], new Type[0]);
             ExpectRegistrationTriplet(publicMethods, nameof(SSC.RegisterGlobalShortcutHandler), typeof(IGlobalShortcutHandler), new Type[0], new[] { typeof(string) });
+            
+            ExpectReplaceMethod(publicMethods, nameof(SSC.ReplaceOAuthV2RequestHandling), typeof(IOAuthV2RequestHandler));
+            ExpectRegistrationTriplet(publicMethods, nameof(SSC.RegisterOAuthV2RequestHandler), typeof(IOAuthV2RequestHandler), new Type[0], new Type[0]);
 
             ExpectReplaceAndKeyedRegistrationTriplet(publicMethods, nameof(SSC.ReplaceBlockOptionProviding), nameof(SSC.RegisterBlockOptionProvider), typeof(IBlockOptionProvider));
             ExpectReplaceAndKeyedRegistrationTriplet(publicMethods, nameof(SSC.ReplaceViewSubmissionHandling), nameof(SSC.RegisterViewSubmissionHandler), typeof(IViewSubmissionHandler));
