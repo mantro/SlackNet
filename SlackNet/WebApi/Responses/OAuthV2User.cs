@@ -1,6 +1,6 @@
 namespace SlackNet.WebApi
 {
-    public class OauthV2User
+    public class OAuthV2User
     {
         public string Id { get; set; }
         public string Scope { get; set; }

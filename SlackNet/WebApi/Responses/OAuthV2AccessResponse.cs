@@ -9,7 +9,7 @@ namespace SlackNet.WebApi
         public string BotUserID { get; set; }
         public string AppId { get; set; }
         public OAuthV2Team Team { get; set; }
-        public OauthV2User User { get; set; }
+        public OAuthV2User User { get; set; }
         public OAuthV2Enterprise Enterprise { get; set; }
 
     }
