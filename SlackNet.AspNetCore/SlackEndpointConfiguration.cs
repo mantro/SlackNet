@@ -45,6 +45,12 @@
             OAuthRedirectUrl = oAuthRedirectUrl;
             return this;
         }
+        
+        public SlackEndpointConfiguration UseOAuthErrorRedirectUrl(string oAuthErrorRedirectUrl)
+        {
+            OAuthErrorRedirectUrl = oAuthErrorRedirectUrl;
+            return this;
+        }
 
 
         public string RoutePrefix { get; private set; } = "slack";
@@ -52,5 +58,7 @@
         public string SigningSecret { get; private set; }
 
         public string OAuthRedirectUrl { get; private set; }
+        
+        public string OAuthErrorRedirectUrl { get; private set; }
     }
 }

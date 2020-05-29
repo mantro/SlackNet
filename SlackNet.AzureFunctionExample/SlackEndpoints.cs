@@ -35,6 +35,6 @@ namespace SlackNet.AzureFunctionExample
 
         [FunctionName("oauth-v2")]
         public Task OAuth([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest request, HttpResponse response) =>
-            _requestHandler.HandleOAuthV2Request(request, _endpointConfig);
+            _requestHandler.HandleOAuthV2Request(request);
     }
 }

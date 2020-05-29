@@ -22,7 +22,7 @@ namespace SlackNet.AspNetCore
         Task<SlackResult> HandleActionRequest(HttpRequest request, SlackEndpointConfiguration config);
         Task<SlackResult> HandleOptionsRequest(HttpRequest request, SlackEndpointConfiguration config);
         Task<SlackResult> HandleSlashCommandRequest(HttpRequest request, SlackEndpointConfiguration config);
-        Task HandleOAuthV2Request(HttpRequest request, SlackEndpointConfiguration config);
+        Task HandleOAuthV2Request(HttpRequest request);
 
     }
 
@@ -97,13 +97,13 @@ namespace SlackNet.AspNetCore
             }
         }
 
-    public async Task HandleOAuthV2Request(HttpRequest request, SlackEndpointConfiguration config)
+    public async Task HandleOAuthV2Request(HttpRequest request)
     {
         if (request.Method != "GET") return;
 
         var code = request.Query.FirstOrDefault(q => q.Key == "code").Value.ToString();
 
-        if (code == null) return;
+        if (string.IsNullOrEmpty(code)) throw new ArgumentNullException(nameof(request));
 
         await _oAuthV2RequestHandler.Handle(code).ConfigureAwait(false);
         }

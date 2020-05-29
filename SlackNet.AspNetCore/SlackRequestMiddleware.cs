@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
@@ -30,14 +31,25 @@ namespace SlackNet.AspNetCore
             else if (context.Request.Path == $"/{_configuration.RoutePrefix}/command")
                 await Respond(context.Response, await _requestHandler.HandleSlashCommandRequest(context.Request, _configuration).ConfigureAwait(false)).ConfigureAwait(false);
             if (context.Request.Path == $"/{_configuration.RoutePrefix}/oauth/v2")
-            {
-                await _requestHandler.HandleOAuthV2Request(context.Request, _configuration).ConfigureAwait(false);
-                context.Response.Redirect(_configuration.OAuthRedirectUrl);
-            }
+                await Respond(context.Response, () => _requestHandler.HandleOAuthV2Request(context.Request)).ConfigureAwait(false);
             else
                 await _next(context).ConfigureAwait(false);
         }
 
         private static Task Respond(HttpResponse httpResponse, SlackResult slackResult) => slackResult.ExecuteResultAsync(httpResponse);
+        
+        private async Task Respond(HttpResponse httpResponse, Func<Task> responder)
+        {
+            try
+            {
+                await responder().ConfigureAwait(false);
+                httpResponse.Redirect(_configuration.OAuthRedirectUrl);
+            }
+            catch
+            {
+                httpResponse.Redirect(_configuration.OAuthErrorRedirectUrl);
+            }
+        }
+
     }
 }
