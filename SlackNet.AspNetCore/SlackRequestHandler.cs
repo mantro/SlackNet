@@ -101,7 +101,9 @@ namespace SlackNet.AspNetCore
     {
         if (request.Method != "GET") return;
 
-        var code = request.Query.First(q => q.Key == "code").Value;
+        var code = request.Query.FirstOrDefault(q => q.Key == "code").Value.ToString();
+
+        if (code == null) return;
 
         await _oAuthV2RequestHandler.Handle(code).ConfigureAwait(false);
         }
