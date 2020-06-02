@@ -57,6 +57,14 @@ namespace SlackNet.AspNetCore
             where TEvent : Event =>
             RegisterCompositeItem<IEventHandler>(p => new ResolvedEventHandler<TEvent>(p, handlerFactory));
 
+        public SlackServiceConfiguration RegisterEventCallbackHandler<TEvent, THandler>()
+            where TEvent : Event
+            where THandler : class, IEventHandler
+        {
+            _serviceCollection.TryAddScoped<THandler>();
+            return RegisterCompositeItem<IEventHandler>(p => new ResolvedEventCallbackHandler<TEvent>(p, s => s.GetRequiredService<THandler>()));
+        }
+
         #endregion Events
 
         #region Block actions
