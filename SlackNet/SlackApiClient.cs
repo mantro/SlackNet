@@ -284,7 +284,7 @@ namespace SlackNet
                         response.Data?.ToObject<ErrorResponse>(
                             JsonSerializer.Create(_jsonSettings.SerializerSettings)));
             }
-            catch (SlackException e)
+            catch (SlackException e) when (e.ErrorCode.EndsWith("invalid_arguments", StringComparison.Ordinal))
             {
                 Console.WriteLine("Makeshift Error Response Reporter:");
                 e.ErrorMessages.ToList().ForEach(Console.WriteLine);
