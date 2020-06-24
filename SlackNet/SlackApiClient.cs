@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -70,7 +71,7 @@ namespace SlackNet
         /// <param name="args">Arguments to send to Slack. Authorization headers will be added automatically.</param>
         /// <param name="cancellationToken"></param>
         Task Post(string apiMethod, Args args, CancellationToken? cancellationToken);
-        
+
         /// <summary>
         /// Calls a Slack API that requires POST content.
         /// </summary>
@@ -79,7 +80,7 @@ namespace SlackNet
         /// <param name="args">Arguments to send to Slack. Authorization headers will be added automatically.</param>
         /// <param name="cancellationToken"></param>
         Task<T> Post<T>(string apiMethod, Args args, CancellationToken? cancellationToken) where T : class;
-        
+
         /// <summary>
         /// Calls a Slack API that requires POST content.
         /// </summary>
@@ -88,7 +89,7 @@ namespace SlackNet
         /// <param name="content">POST body content. Should be either <see cref="FormUrlEncodedContent"/> or <see cref="MultipartFormDataContent"/>.</param>
         /// <param name="cancellationToken"></param>
         Task Post(string apiMethod, Args args, HttpContent content, CancellationToken? cancellationToken);
-        
+
         /// <summary>
         /// Calls a Slack API that requires POST content.
         /// </summary>
@@ -199,7 +200,7 @@ namespace SlackNet
             var requestMessage = new HttpRequestMessage(HttpMethod.Get, Url(apiMethod, args));
             return Deserialize<T>(await _http.Execute<WebApiResponse>(requestMessage, cancellationToken ?? CancellationToken.None).ConfigureAwait(false));
         }
-        
+
         /// <summary>
         /// Calls a Slack API that requires POST content.
         /// </summary>
@@ -216,7 +217,7 @@ namespace SlackNet
         /// <param name="apiMethod">Name of Slack method.</param>
         /// <param name="args">Arguments to send to Slack. The "token" parameter will be filled in automatically.</param>
         /// <param name="cancellationToken"></param>
-        public Task<T> Post<T>(string apiMethod, Args args, CancellationToken? cancellationToken) where T : class => 
+        public Task<T> Post<T>(string apiMethod, Args args, CancellationToken? cancellationToken) where T : class =>
             Post<T>(Url(apiMethod), (object)StripNullArgs(args), cancellationToken);
 
         /// <summary>
@@ -265,7 +266,7 @@ namespace SlackNet
 
         private string Url(string apiMethod) =>
             _urlBuilder.Url(apiMethod, new Args());
-        
+
         private string Url(string apiMethod, Args args)
         {
             if (!args.ContainsKey("token"))
@@ -273,12 +274,25 @@ namespace SlackNet
             return _urlBuilder.Url(apiMethod, args);
         }
 
-        private T Deserialize<T>(WebApiResponse response) where T : class =>
-            response.Ok
-                ? response.Data?.ToObject<T>(JsonSerializer.Create(_jsonSettings.SerializerSettings))
-                : throw new SlackException(response.Data?.ToObject<ErrorResponse>(JsonSerializer.Create(_jsonSettings.SerializerSettings)));
+        private T Deserialize<T>(WebApiResponse response) where T : class
+        {
+            try
+            {
+                return response.Ok
+                    ? response.Data?.ToObject<T>(JsonSerializer.Create(_jsonSettings.SerializerSettings))
+                    : throw new SlackException(
+                        response.Data?.ToObject<ErrorResponse>(
+                            JsonSerializer.Create(_jsonSettings.SerializerSettings)));
+            }
+            catch (SlackException e)
+            {
+                Console.WriteLine("Makeshift Error Response Reporter:");
+                e.ErrorMessages.ToList().ForEach(Console.WriteLine);
+                throw;
+            }
+        }
 
-        private static Args StripNullArgs(Args args) => 
+        private static Args StripNullArgs(Args args) =>
             args.Where(kv => kv.Value != null)
                 .ToDictionary(kv => kv.Key, kv => kv.Value);
     }
