@@ -10,6 +10,9 @@ namespace SlackNet
     public interface ISlackUrlBuilder
     {
         string Url(string apiMethod, Args args);
+        
+        string Url(string baseUrl, string apiMethod, Args args);
+
     }
 
     class SlackUrlBuilder : ISlackUrlBuilder
@@ -19,6 +22,9 @@ namespace SlackNet
 
         public string Url(string apiMethod, Args args) =>
             $"https://slack.com/api/{apiMethod}{Query(args)}";
+        
+        public string Url(string baseUrl, string apiMethod, Args args) =>
+            $"{baseUrl}{apiMethod}{Query(args)}";
 
         private string Query(Args args) => 
             args.Any()

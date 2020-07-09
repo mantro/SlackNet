@@ -18,6 +18,13 @@ namespace SlackNet.AspNetCore
             ApiToken = token;
             return this;
         }
+        
+        public SlackServiceConfiguration UseBaseUrl(string baseUrl)
+        {
+            BaseUrl = baseUrl;
+            return this;
+        }
+
 
         #region Events
 
@@ -594,5 +601,7 @@ namespace SlackNet.AspNetCore
         }
 
         public string ApiToken { get; private set; }
+
+        public string BaseUrl { get; private set; } = "https://slack.com/api";
     }
 }

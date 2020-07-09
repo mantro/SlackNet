@@ -121,20 +121,23 @@ namespace SlackNet
         private readonly ISlackUrlBuilder _urlBuilder;
         private readonly string _token;
         private readonly SlackJsonSettings _jsonSettings;
+        private readonly string _baseUrl;
 
-        public SlackApiClient(string token)
+        public SlackApiClient(string token, string baseUrl = "https://slack.com/api/")
         {
             _jsonSettings = Default.JsonSettings(Default.SlackTypeResolver(Default.AssembliesContainingSlackTypes));
             _http = Default.Http(_jsonSettings);
             _urlBuilder = Default.UrlBuilder(_jsonSettings);
+            _baseUrl = baseUrl;
             _token = token;
         }
 
-        public SlackApiClient(IHttp http, ISlackUrlBuilder urlBuilder, SlackJsonSettings jsonSettings, string token)
+        public SlackApiClient(IHttp http, ISlackUrlBuilder urlBuilder, SlackJsonSettings jsonSettings, string token, string baseUrl = "https://slack.com/api/")
         {
             _http = http;
             _urlBuilder = urlBuilder;
             _jsonSettings = jsonSettings;
+            _baseUrl = baseUrl;
             _token = token;
         }
 
@@ -143,7 +146,7 @@ namespace SlackNet
         /// Useful when you need to run a command as a specific user.
         /// </summary>
         /// <param name="accessToken">New access token.</param>
-        public ISlackApiClient WithAccessToken(string accessToken) => new SlackApiClient(_http, _urlBuilder, _jsonSettings, accessToken);
+        public ISlackApiClient WithAccessToken(string accessToken) => new SlackApiClient(_http, _urlBuilder, _jsonSettings, accessToken, _baseUrl);
 
         public IApiApi Api => new ApiApi(this);
         public IAuthApi Auth => new AuthApi(this);
@@ -264,13 +267,13 @@ namespace SlackNet
         }
 
         private string Url(string apiMethod) =>
-            _urlBuilder.Url(apiMethod, new Args());
+            _urlBuilder.Url(_baseUrl, apiMethod, new Args());
         
         private string Url(string apiMethod, Args args)
         {
             if (!args.ContainsKey("token"))
                 args["token"] = _token;
-            return _urlBuilder.Url(apiMethod, args);
+            return _urlBuilder.Url(_baseUrl, apiMethod, args);
         }
 
         private T Deserialize<T>(WebApiResponse response) where T : class =>
