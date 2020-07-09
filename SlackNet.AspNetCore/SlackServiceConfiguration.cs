@@ -602,6 +602,6 @@ namespace SlackNet.AspNetCore
 
         public string ApiToken { get; private set; }
 
-        public string BaseUrl { get; private set; } = "https://slack.com/api";
+        public string BaseUrl { get; private set; } = "https://slack.com/api/";
     }
 }
