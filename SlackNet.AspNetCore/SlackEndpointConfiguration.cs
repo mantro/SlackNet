@@ -36,6 +36,12 @@
             SigningSecret = signingSecret;
             return this;
         }
+        
+        public SlackEndpointConfiguration UseEventUrlVerification(bool verifyEventUrl)
+        {
+            VerifyEventUrl = verifyEventUrl;
+            return this;
+        }
 
         /// <summary>
         /// Set a redirect URL to forward after successful OAuth flow
@@ -56,9 +62,8 @@
         public string RoutePrefix { get; private set; } = "slack";
         public string VerificationToken { get; private set; }
         public string SigningSecret { get; private set; }
-
+        public bool VerifyEventUrl { get; private set; } = true;
         public string OAuthRedirectUrl { get; private set; }
-        
         public string OAuthErrorRedirectUrl { get; private set; }
     }
 }
