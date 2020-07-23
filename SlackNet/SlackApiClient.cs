@@ -289,7 +289,7 @@ namespace SlackNet
             }
             catch (SlackException e)
             {
-                Console.WriteLine("Makeshift Error Response Reporter:");
+                Console.WriteLine($"Makeshift Error Response Reporter: {e.ErrorCode}");
                 e.ErrorMessages.ToList().ForEach(Console.WriteLine);
                 throw;
             }
