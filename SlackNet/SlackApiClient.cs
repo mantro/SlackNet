@@ -287,9 +287,15 @@ namespace SlackNet
                         response.Data?.ToObject<ErrorResponse>(
                             JsonSerializer.Create(_jsonSettings.SerializerSettings)));
             }
-            catch (SlackException e)
+            catch (SlackException e) when (e.ErrorCode.EndsWith("invalid_arguments", StringComparison.Ordinal))
             {
-                Console.WriteLine($"Makeshift Error Response Reporter: {e.ErrorCode}");
+                Console.WriteLine("Makeshift Reporter: invalid_arguments error from Slack");
+                e.ErrorMessages.ToList().ForEach(Console.WriteLine);
+                throw;
+            }
+            catch (SlackException e) when (e.ErrorCode.EndsWith("invalid_blocks", StringComparison.Ordinal))
+            {
+                Console.WriteLine("Makeshift Reporter: invalid_blocks error from Slack");
                 e.ErrorMessages.ToList().ForEach(Console.WriteLine);
                 throw;
             }
