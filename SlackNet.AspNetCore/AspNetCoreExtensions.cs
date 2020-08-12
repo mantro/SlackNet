@@ -30,7 +30,7 @@ namespace SlackNet.AspNetCore
             serviceCollection.TryAddSingleton<IInteractiveMessageHandler, SwitchingInteractiveMessageHandler>();
             serviceCollection.TryAddSingleton<IDialogSubmissionHandler, SwitchingDialogSubmissionHandler>();
             serviceCollection.AddTransient<ISlackApiClient>(c => new SlackApiClient(c.GetService<IHttp>(), c.GetService<ISlackUrlBuilder>(), c.GetService<SlackJsonSettings>(), configuration.ApiToken));
-            
+            serviceCollection.AddTransient<ISlackStatusApiClient>(c => new SlackStatusApiClient(c.GetService<IHttp>(),  c.GetService<SlackJsonSettings>()));
             return serviceCollection;
         }
 
