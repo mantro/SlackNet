@@ -106,7 +106,11 @@ namespace SlackNet.AspNetCore
 
         var code = request.Query.FirstOrDefault(q => q.Key == "code").Value.ToString();
 
-        if (string.IsNullOrEmpty(code)) throw new ArgumentNullException(nameof(request));
+        if (string.IsNullOrEmpty(code))
+        {
+            Console.WriteLine("Makeshift Reporter: code param can't be empty");
+            throw new ArgumentNullException(nameof(request));
+        }
 
         await _oAuthV2RequestHandler.Handle(code).ConfigureAwait(false);
         }
