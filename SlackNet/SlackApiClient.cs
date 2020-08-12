@@ -63,6 +63,15 @@ namespace SlackNet
         /// <param name="args">Arguments to send to Slack. The "token" parameter will be filled in automatically.</param>
         /// <param name="cancellationToken"></param>
         Task<T> Get<T>(string apiMethod, Args args, CancellationToken? cancellationToken) where T : class;
+        
+        /// <summary>
+        /// Calls a Slack API method.
+        /// </summary>
+        /// <typeparam name="T">Type of response expected.</typeparam>
+        /// <param name="apiMethod">Name of Slack method.</param>
+        /// <param name="args">Arguments to send to Slack. The "token" parameter will be filled in automatically.</param>
+        /// <param name="cancellationToken"></param>
+        Task<T> GetWithoutToken<T>(string apiMethod, Args args, CancellationToken? cancellationToken) where T : class;
 
         /// <summary>
         /// Calls a Slack API that requires POST content.
@@ -71,7 +80,7 @@ namespace SlackNet
         /// <param name="args">Arguments to send to Slack. Authorization headers will be added automatically.</param>
         /// <param name="cancellationToken"></param>
         Task Post(string apiMethod, Args args, CancellationToken? cancellationToken);
-
+        
         /// <summary>
         /// Calls a Slack API that requires POST content.
         /// </summary>
@@ -80,7 +89,7 @@ namespace SlackNet
         /// <param name="args">Arguments to send to Slack. Authorization headers will be added automatically.</param>
         /// <param name="cancellationToken"></param>
         Task<T> Post<T>(string apiMethod, Args args, CancellationToken? cancellationToken) where T : class;
-
+        
         /// <summary>
         /// Calls a Slack API that requires POST content.
         /// </summary>
@@ -89,7 +98,7 @@ namespace SlackNet
         /// <param name="content">POST body content. Should be either <see cref="FormUrlEncodedContent"/> or <see cref="MultipartFormDataContent"/>.</param>
         /// <param name="cancellationToken"></param>
         Task Post(string apiMethod, Args args, HttpContent content, CancellationToken? cancellationToken);
-
+        
         /// <summary>
         /// Calls a Slack API that requires POST content.
         /// </summary>
@@ -203,7 +212,13 @@ namespace SlackNet
             var requestMessage = new HttpRequestMessage(HttpMethod.Get, Url(apiMethod, args));
             return Deserialize<T>(await _http.Execute<WebApiResponse>(requestMessage, cancellationToken ?? CancellationToken.None).ConfigureAwait(false));
         }
-
+        
+        public async Task<T> GetWithoutToken<T>(string apiMethod, Args args, CancellationToken? cancellationToken) where T : class
+        {
+            var requestMessage = new HttpRequestMessage(HttpMethod.Get, Url(apiMethod, args, false));
+            return Deserialize<T>(await _http.Execute<WebApiResponse>(requestMessage, cancellationToken ?? CancellationToken.None).ConfigureAwait(false));
+        }
+        
         /// <summary>
         /// Calls a Slack API that requires POST content.
         /// </summary>
@@ -220,7 +235,7 @@ namespace SlackNet
         /// <param name="apiMethod">Name of Slack method.</param>
         /// <param name="args">Arguments to send to Slack. The "token" parameter will be filled in automatically.</param>
         /// <param name="cancellationToken"></param>
-        public Task<T> Post<T>(string apiMethod, Args args, CancellationToken? cancellationToken) where T : class =>
+        public Task<T> Post<T>(string apiMethod, Args args, CancellationToken? cancellationToken) where T : class => 
             Post<T>(Url(apiMethod), (object)StripNullArgs(args), cancellationToken);
 
         /// <summary>
@@ -266,13 +281,13 @@ namespace SlackNet
                 ?? new WebApiResponse { Ok = true };
             return Deserialize<T>(response);
         }
-
+        
         private string Url(string apiMethod) =>
             _urlBuilder.Url(_baseUrl, apiMethod, new Args());
-
-        private string Url(string apiMethod, Args args)
+        
+        private string Url(string apiMethod, Args args, bool appendToken = true)
         {
-            if (!args.ContainsKey("token"))
+            if (!args.ContainsKey("token") && appendToken)
                 args["token"] = _token;
             return _urlBuilder.Url(_baseUrl, apiMethod, args);
         }

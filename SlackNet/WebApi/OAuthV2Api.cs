@@ -34,7 +34,7 @@ namespace SlackNet.WebApi
         /// <param name="redirectUrl">This must match the originally submitted URI (if one was sent).</param>
         /// <param name="cancellationToken"></param>
         public Task<OAuthV2AccessResponse> Access(string clientId, string clientSecret, string code, string redirectUrl = null, CancellationToken? cancellationToken = null) =>
-            _client.Get<OAuthV2AccessResponse>("oauth.v2.access", new Args
+            _client.GetWithoutToken<OAuthV2AccessResponse>("oauth.v2.access", new Args
             {
                 {"client_id", clientId},
                 {"client_secret", clientSecret},
