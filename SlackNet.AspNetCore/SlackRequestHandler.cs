@@ -208,7 +208,7 @@ namespace SlackNet.AspNetCore
 
             var handlingComplete = handle(response =>
             {
-                earlyResponse.SetResult(buildResult(response));
+                earlyResponse.TrySetResult(buildResult(response));
                 return requestComplete.Task;
             });
 
@@ -218,7 +218,7 @@ namespace SlackNet.AspNetCore
             {
                 return earlyResponse.Task.Result.OnCompleted(() =>
                 {
-                    requestComplete.SetResult(0);
+                    requestComplete.TrySetResult(0);
                     return handlingComplete;
                 });
             }
