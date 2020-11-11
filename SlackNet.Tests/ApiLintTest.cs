@@ -151,6 +151,13 @@ namespace SlackNet.Tests
                 return Task.FromResult(Activator.CreateInstance<T>());
             }
 
+            public Task<T> GetWithoutToken<T>(string apiMethod, Args args, CancellationToken? cancellationToken) where T : class
+            {
+                SlackMethod = apiMethod;
+                Args = args;
+                return Task.FromResult(Activator.CreateInstance<T>());
+            }
+
             public Task Post(string apiMethod, Args args, HttpContent content, CancellationToken? cancellationToken)
             {
                 SlackMethod = apiMethod;
@@ -217,7 +224,7 @@ namespace SlackNet.Tests
             public IUsersApi Users { get; }
             public IUserProfileApi UserProfile { get; }
             public IViewsApi Views { get; }
-            public IOAuthV2Api OAuthV2 { get; }            public IWorkflowsApi Workflows { get; }
+            public IOAuthV2Api OAuthV2 { get; }            
             public IWorkflowsApi Workflows { get; }
         }
     }

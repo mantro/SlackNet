@@ -216,11 +216,9 @@ namespace SlackNet
         public Task<T> Get<T>(string apiMethod, Args args, CancellationToken? cancellationToken) where T : class =>
             WebApiRequest<T>(() => new HttpRequestMessage(HttpMethod.Get, Url(apiMethod, args)), cancellationToken);
 
-        public async Task<T> GetWithoutToken<T>(string apiMethod, Args args, CancellationToken? cancellationToken) where T : class
-        {
-            var requestMessage = new HttpRequestMessage(HttpMethod.Get, Url(apiMethod, args, false));
-            return Deserialize<T>(await _http.Execute<WebApiResponse>(requestMessage, cancellationToken ?? CancellationToken.None).ConfigureAwait(false));
-        }
+        public Task<T> GetWithoutToken<T>(string apiMethod, Args args, CancellationToken? cancellationToken) where T : class =>
+            WebApiRequest<T>(() => new HttpRequestMessage(HttpMethod.Get, Url(apiMethod, args, false)), cancellationToken);
+
         /// <summary>
         /// Calls a Slack API that requires POST content.
         /// </summary>
@@ -289,30 +287,6 @@ namespace SlackNet
                 args["token"] = _token;
             return _urlBuilder.Url(_baseUrl, apiMethod, args);
         }
-        
-        private T Deserialize<T>(WebApiResponse response) where T : class
-        {
-            try
-            {
-                return response.Ok
-                    ? response.Data?.ToObject<T>(JsonSerializer.Create(_jsonSettings.SerializerSettings))
-                    : throw new SlackException(
-                        response.Data?.ToObject<ErrorResponse>(
-                            JsonSerializer.Create(_jsonSettings.SerializerSettings)));
-            }
-            catch (SlackException e) when (e.ErrorCode.EndsWith("invalid_arguments", StringComparison.Ordinal))
-            {
-                Console.WriteLine("Makeshift Reporter: invalid_arguments error from Slack");
-                e.ErrorMessages.ToList().ForEach(Console.WriteLine);
-                throw;
-            }
-            catch (SlackException e) when (e.ErrorCode.EndsWith("invalid_blocks", StringComparison.Ordinal))
-            {
-                Console.WriteLine("Makeshift Reporter: invalid_blocks error from Slack");
-                e.ErrorMessages.ToList().ForEach(Console.WriteLine);
-                throw;
-            }
-        }
 
         private async Task<T> WebApiRequest<T>(Func<HttpRequestMessage> createRequest, CancellationToken? cancellationToken) where T : class
         {
@@ -327,6 +301,18 @@ namespace SlackNet
                 catch (SlackRateLimitException e) when (!DisableRetryOnRateLimit)
                 {
                     await Task.Delay(e.RetryAfter ?? TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+                }
+                catch (SlackException e) when (e.ErrorCode.EndsWith("invalid_arguments", StringComparison.Ordinal))
+                {
+                    Console.WriteLine("Makeshift Reporter: invalid_arguments error from Slack");
+                    e.ErrorMessages.ToList().ForEach(Console.WriteLine);
+                    throw;
+                }
+                catch (SlackException e) when (e.ErrorCode.EndsWith("invalid_blocks", StringComparison.Ordinal))
+                {
+                    Console.WriteLine("Makeshift Reporter: invalid_blocks error from Slack");
+                    e.ErrorMessages.ToList().ForEach(Console.WriteLine);
+                    throw;
                 }
             }
         }
