@@ -66,7 +66,7 @@ namespace SlackNet.Tests
         }
 
         private static bool MethodsEqual(MethodInfo a, MethodInfo b) =>
-            a.Name == b.Name 
+            a.Name == b.Name
             && ParameterTypes(a).SequenceEqual(ParameterTypes(b));
 
         private static IEnumerable<Type> ParameterTypes(MethodInfo method)
@@ -136,7 +136,7 @@ namespace SlackNet.Tests
                 SlackMethod = null;
                 Args = null;
             }
-
+            
             public Task Get(string apiMethod, Args args, CancellationToken? cancellationToken)
             {
                 SlackMethod = apiMethod;
@@ -186,6 +186,7 @@ namespace SlackNet.Tests
             }
 
             public IApiApi Api { get; }
+            public IAppsEventsAuthorizationsApi AppsEventsAuthorizations { get; }
             public IAuthApi Auth { get; }
             public IBotsApi Bots { get; }
             public IChannelsApi Channels { get; }
@@ -216,7 +217,8 @@ namespace SlackNet.Tests
             public IUsersApi Users { get; }
             public IUserProfileApi UserProfile { get; }
             public IViewsApi Views { get; }
-            public IOAuthV2Api OAuthV2 { get; }
+            public IOAuthV2Api OAuthV2 { get; }            public IWorkflowsApi Workflows { get; }
+            public IWorkflowsApi Workflows { get; }
         }
     }
 }

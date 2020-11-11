@@ -39,6 +39,7 @@ namespace SlackNet.AspNetCore
         private readonly IAsyncViewSubmissionHandler _viewSubmissionHandler;
         private readonly IAsyncSlashCommandHandler _slashCommandHandler;
         private readonly IOAuthV2RequestHandler _oAuthV2RequestHandler;
+        private readonly IAsyncWorkflowStepEditHandler _workflowStepEditHandler;
         private readonly SlackJsonSettings _jsonSettings;
 
         public SlackRequestHandler(
@@ -53,6 +54,7 @@ namespace SlackNet.AspNetCore
             IAsyncViewSubmissionHandler viewSubmissionHandler,
             IAsyncSlashCommandHandler slashCommandHandler,
             IOAuthV2RequestHandler oAuthV2RequestHandler,
+            IAsyncWorkflowStepEditHandler workflowStepEditHandler,
             SlackJsonSettings jsonSettings)
         {
             _eventHandler = eventHandler;
@@ -66,6 +68,7 @@ namespace SlackNet.AspNetCore
             _viewSubmissionHandler = viewSubmissionHandler;
             _slashCommandHandler = slashCommandHandler;
             _oAuthV2RequestHandler = oAuthV2RequestHandler;
+            _workflowStepEditHandler = workflowStepEditHandler;
             _jsonSettings = jsonSettings;
         }
 
@@ -144,6 +147,8 @@ namespace SlackNet.AspNetCore
                         return await HandleViewSubmission(viewSubmission).ConfigureAwait(false);
                     case ViewClosed viewClosed:
                         return await HandleViewClosed(viewClosed).ConfigureAwait(false);
+                    case WorkflowStepEdit workflowStepEdit:
+                        return await HandleWorkflowStepEdit(workflowStepEdit).ConfigureAwait(false);
                 }
             }
 
@@ -197,6 +202,9 @@ namespace SlackNet.AspNetCore
 
         private Task<SlackResult> HandleViewClosed(ViewClosed viewClosed) =>
             RespondAsync(r => _viewSubmissionHandler.HandleClose(viewClosed, r));
+        
+        private Task<SlackResult> HandleWorkflowStepEdit(WorkflowStepEdit workflowStepEdit) =>
+            RespondAsync(r => _workflowStepEditHandler.Handle(workflowStepEdit, r));
 
         private static Task<SlackResult> RespondAsync(Func<Responder, Task> handle) =>
             RespondAsync<int>(r => handle(() => r(0)), _ => new EmptyResult(HttpStatusCode.OK), () => new EmptyResult(HttpStatusCode.OK));

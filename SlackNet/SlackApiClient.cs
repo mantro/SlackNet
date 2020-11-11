@@ -15,6 +15,7 @@ namespace SlackNet
     public interface ISlackApiClient
     {
         IApiApi Api { get; }
+        IAppsEventsAuthorizationsApi AppsEventsAuthorizations { get; }
         IAuthApi Auth { get; }
         IBotsApi Bots { get; }
         IChannelsApi Channels { get; }
@@ -46,6 +47,7 @@ namespace SlackNet
         IUsersApi Users { get; }
         IUserProfileApi UserProfile { get; }
         IViewsApi Views { get; }
+        IWorkflowsApi Workflows { get; }
 
         /// <summary>
         /// Calls a Slack API method.
@@ -80,7 +82,7 @@ namespace SlackNet
         /// <param name="args">Arguments to send to Slack. Authorization headers will be added automatically.</param>
         /// <param name="cancellationToken"></param>
         Task Post(string apiMethod, Args args, CancellationToken? cancellationToken);
-        
+
         /// <summary>
         /// Calls a Slack API that requires POST content.
         /// </summary>
@@ -89,7 +91,7 @@ namespace SlackNet
         /// <param name="args">Arguments to send to Slack. Authorization headers will be added automatically.</param>
         /// <param name="cancellationToken"></param>
         Task<T> Post<T>(string apiMethod, Args args, CancellationToken? cancellationToken) where T : class;
-        
+
         /// <summary>
         /// Calls a Slack API that requires POST content.
         /// </summary>
@@ -98,7 +100,7 @@ namespace SlackNet
         /// <param name="content">POST body content. Should be either <see cref="FormUrlEncodedContent"/> or <see cref="MultipartFormDataContent"/>.</param>
         /// <param name="cancellationToken"></param>
         Task Post(string apiMethod, Args args, HttpContent content, CancellationToken? cancellationToken);
-        
+
         /// <summary>
         /// Calls a Slack API that requires POST content.
         /// </summary>
@@ -132,6 +134,7 @@ namespace SlackNet
         private readonly string _token;
         private readonly SlackJsonSettings _jsonSettings;
         private readonly string _baseUrl;
+        public bool DisableRetryOnRateLimit { get; set; }
 
         public SlackApiClient(string token, string baseUrl = "https://slack.com/api/")
         {
@@ -159,6 +162,7 @@ namespace SlackNet
         public ISlackApiClient WithAccessToken(string accessToken) => new SlackApiClient(_http, _urlBuilder, _jsonSettings, accessToken, _baseUrl);
 
         public IApiApi Api => new ApiApi(this);
+        public IAppsEventsAuthorizationsApi AppsEventsAuthorizations => new AppsEventsAuthorizationsApi(this);
         public IAuthApi Auth => new AuthApi(this);
         public IBotsApi Bots => new BotsApi(this);
         public IChannelsApi Channels => new ChannelsApi(this);
@@ -190,6 +194,8 @@ namespace SlackNet
         public IUsersApi Users => new UsersApi(this);
         public IUserProfileApi UserProfile => new UserProfileApi(this);
         public IViewsApi Views => new ViewsApi(this);
+        public IWorkflowsApi Workflows => new WorkflowsApi(this);
+
 
         /// <summary>
         /// Calls a Slack API method.
@@ -207,18 +213,14 @@ namespace SlackNet
         /// <param name="apiMethod">Name of Slack method.</param>
         /// <param name="args">Arguments to send to Slack. The "token" parameter will be filled in automatically.</param>
         /// <param name="cancellationToken"></param>
-        public async Task<T> Get<T>(string apiMethod, Args args, CancellationToken? cancellationToken) where T : class
-        {
-            var requestMessage = new HttpRequestMessage(HttpMethod.Get, Url(apiMethod, args));
-            return Deserialize<T>(await _http.Execute<WebApiResponse>(requestMessage, cancellationToken ?? CancellationToken.None).ConfigureAwait(false));
-        }
-        
+        public Task<T> Get<T>(string apiMethod, Args args, CancellationToken? cancellationToken) where T : class =>
+            WebApiRequest<T>(() => new HttpRequestMessage(HttpMethod.Get, Url(apiMethod, args)), cancellationToken);
+
         public async Task<T> GetWithoutToken<T>(string apiMethod, Args args, CancellationToken? cancellationToken) where T : class
         {
             var requestMessage = new HttpRequestMessage(HttpMethod.Get, Url(apiMethod, args, false));
             return Deserialize<T>(await _http.Execute<WebApiResponse>(requestMessage, cancellationToken ?? CancellationToken.None).ConfigureAwait(false));
         }
-        
         /// <summary>
         /// Calls a Slack API that requires POST content.
         /// </summary>
@@ -235,7 +237,7 @@ namespace SlackNet
         /// <param name="apiMethod">Name of Slack method.</param>
         /// <param name="args">Arguments to send to Slack. The "token" parameter will be filled in automatically.</param>
         /// <param name="cancellationToken"></param>
-        public Task<T> Post<T>(string apiMethod, Args args, CancellationToken? cancellationToken) where T : class => 
+        public Task<T> Post<T>(string apiMethod, Args args, CancellationToken? cancellationToken) where T : class =>
             Post<T>(Url(apiMethod), (object)StripNullArgs(args), cancellationToken);
 
         /// <summary>
@@ -256,11 +258,8 @@ namespace SlackNet
         /// <param name="args">Arguments to send to Slack. The "token" parameter will be filled in automatically.</param>
         /// <param name="content">POST body content. Should be either <see cref="FormUrlEncodedContent"/> or <see cref="MultipartFormDataContent"/>.</param>
         /// <param name="cancellationToken"></param>
-        public async Task<T> Post<T>(string apiMethod, Args args, HttpContent content, CancellationToken? cancellationToken) where T : class
-        {
-            var requestMessage = new HttpRequestMessage(HttpMethod.Post, Url(apiMethod, args)) { Content = content };
-            return Deserialize<T>(await _http.Execute<WebApiResponse>(requestMessage, cancellationToken ?? CancellationToken.None).ConfigureAwait(false));
-        }
+        public Task<T> Post<T>(string apiMethod, Args args, HttpContent content, CancellationToken? cancellationToken) where T : class =>
+            WebApiRequest<T>(() => new HttpRequestMessage(HttpMethod.Post, Url(apiMethod, args)) { Content = content }, cancellationToken);
 
         /// <summary>
         /// Posts a message to a response URL provided by e.g. <see cref="InteractionRequest"/> or <see cref="SlashCommand"/>.
@@ -271,17 +270,16 @@ namespace SlackNet
         public Task Respond(string responseUrl, IReadOnlyMessage message, CancellationToken? cancellationToken) =>
             Post<object>(responseUrl, message, cancellationToken);
 
-        private async Task<T> Post<T>(string requestUri, object body, CancellationToken? cancellationToken) where T : class
-        {
-            var requestMessage = new HttpRequestMessage(HttpMethod.Post, requestUri);
-            requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _token);
-            requestMessage.Content = new StringContent(JsonConvert.SerializeObject(body, _jsonSettings.SerializerSettings), Encoding.UTF8, "application/json");
+        private Task<T> Post<T>(string requestUri, object body, CancellationToken? cancellationToken) where T : class =>
+            WebApiRequest<T>(() =>
+            {
+                var requestMessage = new HttpRequestMessage(HttpMethod.Post, requestUri);
+                requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+                requestMessage.Content = new StringContent(JsonConvert.SerializeObject(body, _jsonSettings.SerializerSettings), Encoding.UTF8, "application/json");
+                return requestMessage;
+            }, cancellationToken);
 
-            var response = await _http.Execute<WebApiResponse>(requestMessage, cancellationToken ?? CancellationToken.None).ConfigureAwait(false)
-                ?? new WebApiResponse { Ok = true };
-            return Deserialize<T>(response);
-        }
-        
+
         private string Url(string apiMethod) =>
             _urlBuilder.Url(_baseUrl, apiMethod, new Args());
         
@@ -291,7 +289,7 @@ namespace SlackNet
                 args["token"] = _token;
             return _urlBuilder.Url(_baseUrl, apiMethod, args);
         }
-
+        
         private T Deserialize<T>(WebApiResponse response) where T : class
         {
             try
@@ -315,6 +313,28 @@ namespace SlackNet
                 throw;
             }
         }
+
+        private async Task<T> WebApiRequest<T>(Func<HttpRequestMessage> createRequest, CancellationToken? cancellationToken) where T : class
+        {
+            while (true)
+            {
+                try
+                {
+                    var response = await _http.Execute<WebApiResponse>(createRequest(), cancellationToken ?? CancellationToken.None).ConfigureAwait(false)
+                        ?? new WebApiResponse { Ok = true };
+                    return Deserialize<T>(response);
+                }
+                catch (SlackRateLimitException e) when (!DisableRetryOnRateLimit)
+                {
+                    await Task.Delay(e.RetryAfter ?? TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+                }
+            }
+        }
+
+        private T Deserialize<T>(WebApiResponse response) where T : class =>
+            response.Ok
+                ? response.Data?.ToObject<T>(JsonSerializer.Create(_jsonSettings.SerializerSettings))
+                : throw new SlackException(response.Data?.ToObject<ErrorResponse>(JsonSerializer.Create(_jsonSettings.SerializerSettings)));
 
         private static Args StripNullArgs(Args args) =>
             args.Where(kv => kv.Value != null)

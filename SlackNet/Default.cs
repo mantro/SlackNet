@@ -28,11 +28,14 @@ namespace SlackNet
                     Converters =
                         {
                             new EnumNameConverter(namingStrategy),
+                            new TimeSpanConverter(),
                             new SlackTypeConverter(slackTypeResolver)
                         }
                 };
         }
         
+        public static ISlackTypeResolver SlackTypeResolver() => new SlackTypeResolver(AssembliesContainingSlackTypes);
+
         public static ISlackTypeResolver SlackTypeResolver() => new SlackTypeResolver(AssembliesContainingSlackTypes);
 
         public static ISlackTypeResolver SlackTypeResolver(params Assembly[] assembliesContainingSlackTypes) => new SlackTypeResolver(assembliesContainingSlackTypes);

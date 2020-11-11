@@ -382,13 +382,21 @@ namespace SlackNet.Bot
             
             do
             {
-                var response = await _api.Conversations.List(cursor: cursor).ConfigureAwait(false);
+                var response = await _api.Conversations.List(
+                    cursor: cursor,
+                    types: new[]
+                        {
+                            ConversationType.PublicChannel,
+                            ConversationType.PrivateChannel,
+                            ConversationType.Im,
+                            ConversationType.Mpim
+                        }).ConfigureAwait(false);
                 
                 foreach (var conversation in response.Channels) 
                     _conversations[conversation.Id] = Task.FromResult(conversation);
 
                 cursor = response.ResponseMetadata.NextCursor;
-            } while (cursor != null);
+            } while (!string.IsNullOrEmpty(cursor));
         }
 
         /// <summary>
@@ -433,7 +441,7 @@ namespace SlackNet.Bot
                 foreach (var user in response.Members)
                     _users[user.Id] = Task.FromResult(user);
 
-                cursor = response.ResponseMetadata?.NextCursor;
+                cursor = response.ResponseMetadata.NextCursor;
             } while (!string.IsNullOrEmpty(cursor));
             return users;
         }
